@@ -172,6 +172,7 @@ return.")
 
 ;;; paredit key mappings
 (define-key paredit-mode-map (kbd "RET") 'electrify-return-if-match)
+
 ;;; normal mode
 (define-key evil-normal-state-map (kbd "C-\<") 'paredit-backward-slurp-sexp)
 (define-key evil-normal-state-map (kbd "C-\>") 'paredit-forward-slurp-sexp)
@@ -180,5 +181,7 @@ return.")
 (define-key evil-normal-state-map (kbd "S") 'paredit-splice-sexp)
 (define-key evil-normal-state-map (kbd "W") 'paredit-wrap-round)
 (define-key evil-normal-state-map (kbd "\d") 'evil-jump-item)
+;(define-key evil-normal-state-map (kbd "cpp") 'cider-eval-expression-at-point)
+
 ;;; visual mode
 (define-key evil-visual-state-map (kbd "W") 'paredit-wrap-round)
