@@ -115,6 +115,7 @@ by Prelude.")
 
 ;;; init.el ends here
 
+;;; Set fullscreen 27"
 (setq default-frame-alist '((width . 360) (height . 99)))
 
 (defvar my-packages
@@ -136,5 +137,48 @@ by Prelude.")
   (unless (package-installed-p p)
     (package-install p)))
 
+(require 'evil)
+(require 'paredit)
+(require 'evil-paredit)
+(require 'clojure-mode)
+
 (evil-mode t)
 (load-theme 'solarized-dark t)
+
+(defun evil-pparedit-mode ()
+  (paredit-mode)
+  (evil-paredit-mode))
+
+;;; paredit init in lisp(s)
+(add-hook 'clojure-mode-hook 'evil-pparedit-mode)
+(add-hook 'emacs-lisp-mode-hook 'evil-pparedit-mode)
+
+;;; paredit customisations
+(defvar electrify-return-match
+  "[\]}\)\"]"
+  "If this regexp matches the text after the cursor, do an \"electric\"
+return.")
+
+(defun electrify-return-if-match (arg)
+  "If the text after the cursor matches `electrify-return-match' then
+  open and indent an empty line between the cursor and the text.  Move the
+  cursor to the new line."
+  (interactive "P")
+  (let ((case-fold-search nil))
+    (if (looking-at electrify-return-match)
+        (save-excursion (newline-and-indent)))
+    (newline arg)
+    (indent-according-to-mode)))
+
+;;; paredit key mappings
+(define-key paredit-mode-map (kbd "RET") 'electrify-return-if-match)
+;;; normal mode
+(define-key evil-normal-state-map (kbd "C-\<") 'paredit-backward-slurp-sexp)
+(define-key evil-normal-state-map (kbd "C-\>") 'paredit-forward-slurp-sexp)
+(define-key evil-normal-state-map (kbd "<") 'paredit-backward-barf-sexp)
+(define-key evil-normal-state-map (kbd ">") 'paredit-forward-barf-sexp)
+(define-key evil-normal-state-map (kbd "S") 'paredit-splice-sexp)
+(define-key evil-normal-state-map (kbd "W") 'paredit-wrap-round)
+(define-key evil-normal-state-map (kbd "\d") 'evil-jump-item)
+;;; visual mode
+(define-key evil-visual-state-map (kbd "W") 'paredit-wrap-round)
