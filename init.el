@@ -114,3 +114,27 @@ by Prelude.")
  (run-at-time 5 nil 'prelude-tip-of-the-day))
 
 ;;; init.el ends here
+
+(setq default-frame-alist '((width . 360) (height . 99)))
+
+(defvar my-packages
+  '(
+    paredit
+    evil
+    evil-paredit
+    ;evil-nerd-commenter
+    solarized-theme
+    ;; Clojure
+    ac-nrepl
+    ;clojure-cheatsheet
+    cider
+    ;clojure-mode
+    )
+  "My packages to install.")
+
+(dolist (p my-packages)
+  (unless (package-installed-p p)
+    (package-install p)))
+
+(evil-mode t)
+(load-theme 'solarized-dark t)
