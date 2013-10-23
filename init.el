@@ -118,6 +118,22 @@ by Prelude.")
 ;;; Set fullscreen 27"
 (setq default-frame-alist '((width . 360) (height . 99)))
 
+(defun left-vertial-frame ()
+  (interactive)
+  (new-frame)
+  (set-frame-size (selected-frame) 148 135)
+  (set-frame-position (selected-frame) -1078 -63))
+
+(defun right-vertial-frame ()
+  (interactive)
+  (new-frame)
+  (set-frame-size (selected-frame) 148 135)
+  (set-frame-position (selected-frame) 2562 -63))
+
+;;; display line numbers in margin, col nums at bottom.
+(global-linum-mode 1)
+(column-number-mode 1)
+
 (defvar my-packages
   '(
     paredit
@@ -143,7 +159,7 @@ by Prelude.")
 (require 'clojure-mode)
 
 (evil-mode t)
-(load-theme 'solarized-dark t)
+;(load-theme 'solarized-dark t)
 
 (defun evil-pparedit-mode ()
   (paredit-mode)
@@ -182,6 +198,50 @@ return.")
 (define-key evil-normal-state-map (kbd "W") 'paredit-wrap-round)
 (define-key evil-normal-state-map (kbd "\d") 'evil-jump-item)
 ;(define-key evil-normal-state-map (kbd "cpp") 'cider-eval-expression-at-point)
+(define-key evil-normal-state-map (kbd "K") 'cider-doc)
+
+;;; motions
+(define-key evil-motion-state-map (kbd "\d") 'evil-jump-item)
 
 ;;; visual mode
 (define-key evil-visual-state-map (kbd "W") 'paredit-wrap-round)
+
+(defvar paren-face 'paren-face)
+
+(defface paren-face
+    '((((class color))
+       (:foreground "DimGray")))
+  "Face for displaying a paren."
+  :group 'faces)
+
+(defmacro paren-face-add-support (keywords)
+  "Generate a lambda expression for use in a hook."
+  `(lambda ()
+    (let* ((regexp "(\\|)")
+           (match (assoc regexp ,keywords)))
+      (unless (eq (cdr match) paren-face)
+        (setq ,keywords (append (list (cons regexp paren-face)) ,keywords))))))
+
+(defun paren-face-add-keyword ()
+  "Adds paren-face support to the mode."
+  (font-lock-add-keywords nil '(("(\\|)" . paren-face))))
+
+;; Keep the compiler quiet.
+(eval-when-compile
+  (defvar clojure-font-lock-keywords nil)
+  (defvar jess-font-lock-keywords)
+  (defvar lisp-font-lock-keywords-2 nil)
+  (defvar scheme-font-lock-keywords-2 nil))
+
+(add-hook 'clojure-mode-hook (paren-face-add-support clojure-font-lock-keywords))
+(add-hook 'emacs-lisp-mode-hook (paren-face-add-support lisp-font-lock-keywords-2))
+(add-hook 'ielm-mode-hook 'paren-face-add-keyword)
+(add-hook 'inferior-jess-mode-hook 'paren-face-add-keyword)
+(add-hook 'jess-mode-hook (paren-face-add-support jess-font-lock-keywords))
+(add-hook 'lisp-interaction-mode-hook (paren-face-add-support lisp-font-lock-keywords-2))
+(add-hook 'lisp-mode-hook (paren-face-add-support lisp-font-lock-keywords-2))
+(add-hook 'nrepl-mode-hook 'paren-face-add-keyword)
+(add-hook 'scheme-mode-hook (paren-face-add-support scheme-font-lock-keywords-2))
+(add-hook 'slime-repl-mode-hook 'paren-face-add-keyword)
+
+(require 'dirtree)
