@@ -116,7 +116,7 @@ by Prelude.")
 ;;; init.el ends here
 
 ;;; Set fullscreen 27"
-(setq default-frame-alist '((width . 360) (height . 99)))
+(setq default-frame-alist '((width . 421) (height . 99)))
 
 (defun left-vertial-frame ()
   (interactive)
@@ -138,6 +138,7 @@ by Prelude.")
   '(
     paredit
     evil
+    evil-leader
     evil-paredit
     ;evil-nerd-commenter
     solarized-theme
@@ -146,6 +147,7 @@ by Prelude.")
     ;clojure-cheatsheet
     cider
     ;clojure-mode
+    project-explorer
     )
   "My packages to install.")
 
@@ -153,21 +155,56 @@ by Prelude.")
   (unless (package-installed-p p)
     (package-install p)))
 
-(require 'evil)
 (require 'paredit)
+(require 'evil)
+(require 'evil-leader)
 (require 'evil-paredit)
 (require 'clojure-mode)
+(require 'project-explorer)
+(require 'ac-nrepl)
+
+;; Use auto-complete as completion at point
+(defun set-auto-complete-as-completion-at-point-function ()
+  (setq completion-at-point-functions '(auto-complete)))
+
+(add-hook 'auto-complete-mode-hook
+          'set-auto-complete-as-completion-at-point-function)
+
 
 (evil-mode t)
-;(load-theme 'solarized-dark t)
+(global-evil-leader-mode)
+(load-theme 'solarized-dark t)
 
 (defun evil-pparedit-mode ()
   (paredit-mode)
   (evil-paredit-mode))
 
+(defun cider-mode-setup ()
+  (ac-nrepl-setup)
+  (evil-pparedit-mode))
+
 ;;; paredit init in lisp(s)
 (add-hook 'clojure-mode-hook 'evil-pparedit-mode)
 (add-hook 'emacs-lisp-mode-hook 'evil-pparedit-mode)
+
+;;; Configure CIDER
+(add-hook 'cider-repl-mode-hook 'cider-mode-setup)
+;(add-hook 'cider-interaction-mode-hook 'cider-mode-setup)
+(eval-after-load "auto-complete"
+  '(add-to-list 'ac-modes 'cider-repl-mode))
+
+;; Paredit in clojure
+(add-hook 'clojure-mode-hook 'paredit-mode)
+
+;; eldoc in clojure
+; (add-hook 'cider-interaction-mode-hook 'cider-turn-on-eldoc-mode)
+
+
+;; Don't annoy me
+;(setq cider-hide-special-buffers t)
+;(setq cider-popup-stacktraces nil)
+;(setq cider-repl-pop-to-buffer-on-connect nil)
+;(setq cider-repl-popup-stacktraces t)
 
 ;;; paredit customisations
 (defvar electrify-return-match
@@ -200,11 +237,34 @@ return.")
 ;(define-key evil-normal-state-map (kbd "cpp") 'cider-eval-expression-at-point)
 (define-key evil-normal-state-map (kbd "K") 'cider-doc)
 
+(define-key evil-normal-state-map (kbd "<left>") 'evil-window-left)
+(define-key evil-normal-state-map (kbd "<right>") 'evil-window-right)
+(define-key evil-normal-state-map (kbd "<up>") 'evil-window-up)
+(define-key evil-normal-state-map (kbd "<down>") 'evil-window-down)
+
 ;;; motions
 (define-key evil-motion-state-map (kbd "\d") 'evil-jump-item)
 
 ;;; visual mode
 (define-key evil-visual-state-map (kbd "W") 'paredit-wrap-round)
+
+;;; general mappings
+;(define-key cider-repl-mode-map (kbd "<up>") 'cider-backward-input)
+;(define-key cider-repl-mode-map (kbd "<down>") 'cider-forward-input)
+;(define-key cider-repl-mode-map (kbd "C-<up>") 'previous-line)
+;(define-key cider-repl-mode-map (kbd "C-<down>") 'next-line)
+
+;;; evil leader mappings
+(evil-leader/set-leader ",")
+(evil-leader/set-key
+  "nt" 'project-explorer-open
+  "w[" 'paredit-wrap-square
+  "w{" 'paredit-wrap-curly
+  "ns" 'cider-set-ns
+  "ef" 'cider-eval-buffer
+  "ee" 'cider-eval-expression-at-point
+  "gd" 'cider-jump
+  )
 
 (defvar paren-face 'paren-face)
 
@@ -244,4 +304,36 @@ return.")
 (add-hook 'scheme-mode-hook (paren-face-add-support scheme-font-lock-keywords-2))
 (add-hook 'slime-repl-mode-hook 'paren-face-add-keyword)
 
-(require 'dirtree)
+(eval-after-load 'project-explorer
+  '(progn
+     (defvar project-explorer-mode-map)
+     (evil-make-overriding-map project-explorer-mode-map 'normal t)
+     (evil-define-key 'normal project-explorer-mode-map
+       "o" 'pe/return
+       "v" (lambda ()
+             (interactive)
+             (setq w (next-window))
+             (split-window w nil t)
+             (pe/return))
+       "s" (lambda ()
+             (interactive)
+             (setq w (next-window))
+             (split-window w nil)
+             (pe/return)))))
+
+(global-whitespace-mode +1)
+
+;;; Set font
+(set-face-attribute 'default nil :font "Envy Code R")
+
+;;; Resize windows
+(global-set-key (kbd "s-\<") 'shrink-window-horizontally) ; TODO: evil-version?
+(global-set-key (kbd "s-\>") 'enlarge-window-horizontally) ; TODO: evil-version?
+
+;;; Close with CMD-w
+(global-set-key (kbd "s-w") 'delete-window)
+
+;; scroll one line at a time (less "jumpy" than defaults)
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
