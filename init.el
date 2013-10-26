@@ -337,6 +337,7 @@ return.")
 ;;              (pe/return)))))
 
 (require 'nerdtree-project-explorer)
+(require 'clojure-accents)
 
 (global-whitespace-mode +1)
 
