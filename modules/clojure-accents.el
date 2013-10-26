@@ -27,6 +27,22 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
               ns)))
     (nrepl-send-request (accent/nrepl-eval-request input ns session) callback)))
 
+(defun accent/set-buffer-meta ()
+  (let* ((file (buffer-name))
+         (coll (split-string (clojure-expected-ns) "\\."))
+         (ns (string/join "." (if (string-match "^clj" (car coll))
+                                  (cdr coll)
+                                coll))))
+    (setq buffer-meta (plist-put buffer-meta 'name file))
+    (setq buffer-meta (plist-put buffer-meta 'filename (buffer-file-name)))
+    (setq buffer-meta (plist-put buffer-meta 'ns ns))
+    (cond ((string-match "\.cljs$" file)
+           (setq buffer-meta (plist-put buffer-meta 'filetype "cljs")))
+          ((string-match "\.clj$" file)
+           (setq buffer-meta (plist-put buffer-meta 'filetype "clj")))
+          ((string-match "\.cljx$" file)
+           (setq buffer-meta (plist-put buffer-meta 'filetype "cljx"))))))
+
 (define-minor-mode clojure-accents-mode
   "Clj/Cljs/Cljx interaction and co-development."
   :lighter " clj^"
@@ -47,20 +63,7 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
   (make-variable-buffer-local
    (defvar buffer-meta '()
      "Metadata about the Clojure^ buffer."))
-  (let* ((file (buffer-name))
-         (coll (split-string (clojure-expected-ns) "\\."))
-         (ns (string/join "." (if (string-match "^clj" (car coll))
-                                  (cdr coll)
-                                  coll))))
-    (setq buffer-meta (plist-put buffer-meta 'name file))
-    (setq buffer-meta (plist-put buffer-meta 'filename (buffer-file-name)))
-    (setq buffer-meta (plist-put buffer-meta 'ns ns))
-    (cond ((string-match "\.cljs$" file)
-           (setq buffer-meta (plist-put buffer-meta 'filetype "cljs")))
-          ((string-match "\.clj$" file)
-           (setq buffer-meta (plist-put buffer-meta 'filetype "clj")))
-          ((string-match "\.cljx$" file)
-           (setq buffer-meta (plist-put buffer-meta 'filetype "cljx"))))))
+  (accent/set-buffer-meta))
 
 (add-hook 'clojure-mode-hook 'clojure-accents-mode)
 
