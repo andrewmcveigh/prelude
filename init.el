@@ -229,6 +229,21 @@ return.")
 ;;; normal mode
 (define-key evil-normal-state-map (kbd "C-\<") 'paredit-backward-slurp-sexp)
 (define-key evil-normal-state-map (kbd "C-\>") 'paredit-forward-slurp-sexp)
+
+(define-key evil-normal-state-map (kbd "C-u") (lambda ()
+                                                (interactive)
+                                                (evil-scroll-up nil)
+                                                (evil-scroll-line-to-center
+                                                 (line-number-at-pos))))
+
+(define-key evil-normal-state-map (kbd "C-d") (lambda ()
+                                                (interactive)
+                                                (evil-scroll-down nil)
+                                                (evil-scroll-line-to-center
+                                                 (line-number-at-pos))))
+
+(define-key evil-normal-state-map (kbd "C-p") 'helm-prelude)
+
 (define-key evil-normal-state-map (kbd "<") 'paredit-backward-barf-sexp)
 (define-key evil-normal-state-map (kbd ">") 'paredit-forward-barf-sexp)
 (define-key evil-normal-state-map (kbd "S") 'paredit-splice-sexp)
@@ -304,22 +319,24 @@ return.")
 (add-hook 'scheme-mode-hook (paren-face-add-support scheme-font-lock-keywords-2))
 (add-hook 'slime-repl-mode-hook 'paren-face-add-keyword)
 
-(eval-after-load 'project-explorer
-  '(progn
-     (defvar project-explorer-mode-map)
-     (evil-make-overriding-map project-explorer-mode-map 'normal t)
-     (evil-define-key 'normal project-explorer-mode-map
-       "o" 'pe/return
-       "v" (lambda ()
-             (interactive)
-             (setq w (next-window))
-             (split-window w nil t)
-             (pe/return))
-       "s" (lambda ()
-             (interactive)
-             (setq w (next-window))
-             (split-window w nil)
-             (pe/return)))))
+;; (eval-after-load 'project-explorer
+;;   '(progn
+;;      (defvar project-explorer-mode-map)
+;;      (evil-make-overriding-map project-explorer-mode-map 'normal t)
+;;      (evil-define-key 'normal project-explorer-mode-map
+;;        "o" 'pe/return
+;;        "v" (lambda ()
+;;              (interactive)
+;;              (setq w (next-window))
+;;              (split-window w nil t)
+;;              (pe/return))
+;;        "s" (lambda ()
+;;              (interactive)
+;;              (setq w (next-window))
+;;              (split-window w nil)
+;;              (pe/return)))))
+
+(require 'nerdtree-project-explorer)
 
 (global-whitespace-mode +1)
 
@@ -327,8 +344,8 @@ return.")
 (set-face-attribute 'default nil :font "Envy Code R")
 
 ;;; Resize windows
-(global-set-key (kbd "s-\<") 'shrink-window-horizontally) ; TODO: evil-version?
-(global-set-key (kbd "s-\>") 'enlarge-window-horizontally) ; TODO: evil-version?
+(global-set-key (kbd "s-\<") 'evil-window-decrease-width)
+(global-set-key (kbd "s-\>") 'evil-window-increase-width)
 
 ;;; Close with CMD-w
 (global-set-key (kbd "s-w") 'delete-window)
@@ -337,3 +354,5 @@ return.")
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
 (setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
 (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+
+(setq scroll-bar-mode nil)
