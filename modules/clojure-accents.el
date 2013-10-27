@@ -70,6 +70,29 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
     "ee" 'cider-eval-expression-at-point
     "gd" 'cider-jump))
 
+(defun accent/set-repl-accent (accent)
+  (setq buffer-meta (plist-put buffer-meta 'filetype accent)))
+
+(defun accent/set-repl-accent-cljs ()
+  (interactive)
+  (accent/set-repl-accent "cljs"))
+
+(defun accent/set-repl-accent-clj ()
+  (interactive)
+  (accent/set-repl-accent "clj"))
+
+(defun accent/load-cljs-env ()
+  (interactive)
+  (insert "(def repl-env (reset! cemerick.austin.repls/browser-repl-env
+                      (cemerick.austin/repl-env)))")
+  (cider-return))
+
+(defun accent/load-cljs-repl ()
+  (interactive)
+  (accent/load-cljs-env)
+  (insert "(cemerick.austin.repls/cljs-repl repl-env)")
+  (cider-return))
+
 (define-minor-mode clojure-accents-mode
   "Clj/Cljs/Cljx interaction and co-development."
   :lighter " clj^"
@@ -89,8 +112,7 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
             clojure-mode-map)
   (make-local-variable 'buffer-meta)
   (accent/set-buffer-meta)
-  ;(accent/evil-leader-keys)
-  )
+  (accent/evil-leader-keys))
 
 (add-hook 'clojure-mode-hook 'clojure-accents-mode)
 (add-hook 'cider-repl-mode-hook 'clojure-accents-mode)
