@@ -1,7 +1,13 @@
 (require 'clojure-mode)
 (require 'cider)
 (require 'cider-interaction)
+(require 'cider-repl)
 (require 'nrepl-client)
+(require 'evil)
+(require 'evil-leader)
+
+(defvar buffer-meta '()
+     "Metadata about the Clojure^ buffer.")
 
 (defun string/join (sep strings)
   (mapconcat 'identity strings sep))
@@ -10,14 +16,18 @@
   "Send a request to eval INPUT.
 If NS is non-nil, include it in the request.
 Use SESSION if it is non-nil, otherwise use the current session."
-  (append (if ns (list "ns" ns))
-          (list
-           "op" "eval"
-           "session" (or session (nrepl-current-session))
-           "code" input
-           "buffer" (plist-get buffer-meta 'name)
-           "path" (plist-get buffer-meta 'filename)
-           "accent" (plist-get buffer-meta 'filetype))))
+  (let* ((ns (or ns (plist-get buffer-meta 'ns)))
+         (buffer (plist-get buffer-meta 'name))
+         (path (plist-get buffer-meta 'filename))
+         (accent (plist-get buffer-meta 'filetype)))
+    (append (if ns (list "ns" ns))
+            (if buffer (list "buffer" buffer))
+            (if path (list "path" path))
+            (if accent (list "accent" accent))
+            (list
+             "op" "eval"
+             "session" (or session (nrepl-current-session))
+             "code" input))))
 
 (defun accent/nrepl-send-string (input callback &optional ns session)
   "Send the request INPUT and register the CALLBACK as the response handler.
@@ -27,21 +37,38 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
               ns)))
     (nrepl-send-request (accent/nrepl-eval-request input ns session) callback)))
 
+(eval-after-load "nrepl-client"
+  '(defun nrepl-send-string (input callback &optional ns session)
+     "Send the request INPUT and register the CALLBACK as the response handler.
+See command `nrepl-eval-request' for details on how NS and SESSION are processed."
+     (accent/nrepl-send-string input callback ns session)))
+
 (defun accent/set-buffer-meta ()
-  (let* ((file (buffer-name))
-         (coll (split-string (clojure-expected-ns) "\\."))
-         (ns (string/join "." (if (string-match "^clj" (car coll))
-                                  (cdr coll)
-                                coll))))
+  (let ((file (buffer-name)))
     (setq buffer-meta (plist-put buffer-meta 'name file))
-    (setq buffer-meta (plist-put buffer-meta 'filename (buffer-file-name)))
-    (setq buffer-meta (plist-put buffer-meta 'ns ns))
-    (cond ((string-match "\.cljs$" file)
-           (setq buffer-meta (plist-put buffer-meta 'filetype "cljs")))
-          ((string-match "\.clj$" file)
-           (setq buffer-meta (plist-put buffer-meta 'filetype "clj")))
-          ((string-match "\.cljx$" file)
-           (setq buffer-meta (plist-put buffer-meta 'filetype "cljx"))))))
+    (if (equal file "*cider*")
+      (setq buffer-meta (plist-put buffer-meta 'filetype "repl"))
+      (let* ((path (buffer-file-name))
+             (coll (split-string (clojure-expected-ns) "\\."))
+             (ns (string/join "." (if (and (string-match "^clj" (car coll))
+                                           (string-match "src/clj" path))
+                                      (cdr coll)
+                                    coll))))
+        (setq buffer-meta (plist-put buffer-meta 'name file))
+        (setq buffer-meta (plist-put buffer-meta 'filename path))
+        (setq buffer-meta (plist-put buffer-meta 'ns ns))
+        (cond ((string-match "\.cljs$" file)
+               (setq buffer-meta (plist-put buffer-meta 'filetype "cljs")))
+              ((string-match "\.clj$" file)
+               (setq buffer-meta (plist-put buffer-meta 'filetype "clj")))
+              ((string-match "\.cljx$" file)
+               (setq buffer-meta (plist-put buffer-meta 'filetype "cljx"))))))))
+
+(defun accent/evil-leader-keys ()
+  (evil-leader/set-key "ns" 'cider-set-ns
+    "ef" 'cider-eval-buffer
+    "ee" 'cider-eval-expression-at-point
+    "gd" 'cider-jump))
 
 (define-minor-mode clojure-accents-mode
   "Clj/Cljs/Cljx interaction and co-development."
@@ -60,11 +87,12 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
                                                 "user"
                                                 nil)))
             clojure-mode-map)
-  (make-variable-buffer-local
-   (defvar buffer-meta '()
-     "Metadata about the Clojure^ buffer."))
-  (accent/set-buffer-meta))
+  (make-local-variable 'buffer-meta)
+  (accent/set-buffer-meta)
+  ;(accent/evil-leader-keys)
+  )
 
 (add-hook 'clojure-mode-hook 'clojure-accents-mode)
+(add-hook 'cider-repl-mode-hook 'clojure-accents-mode)
 
 (provide 'clojure-accents)

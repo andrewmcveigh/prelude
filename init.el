@@ -274,12 +274,7 @@ return.")
 (evil-leader/set-key
   "nt" 'project-explorer-open
   "w[" 'paredit-wrap-square
-  "w{" 'paredit-wrap-curly
-  "ns" 'cider-set-ns
-  "ef" 'cider-eval-buffer
-  "ee" 'cider-eval-expression-at-point
-  "gd" 'cider-jump
-  )
+  "w{" 'paredit-wrap-curly)
 
 (defvar paren-face 'paren-face)
 
