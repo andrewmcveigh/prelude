@@ -46,7 +46,7 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
 (defun accent/set-buffer-meta ()
   (let ((file (buffer-name)))
     (setq buffer-meta (plist-put buffer-meta 'name file))
-    (if (equal file "*cider*")
+    (if (string-match "\\*cider.*\\*" file)
       (setq buffer-meta (plist-put buffer-meta 'filetype "repl"))
       (let* ((path (buffer-file-name))
              (coll (split-string (clojure-expected-ns) "\\."))
@@ -96,20 +96,6 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
 (define-minor-mode clojure-accents-mode
   "Clj/Cljs/Cljx interaction and co-development."
   :lighter " clj^"
-  :keymap (progn
-            (evil-make-overriding-map clojure-mode-map 'normal t)
-            (evil-define-key 'normal clojure-mode-map
-              "mm" (lambda ()
-                     (interactive)
-                     (message "%s" buffer-meta))
-              "mpp" (lambda ()
-                      (interactive)
-                      (accent/nrepl-send-string "(+ 1 2)"
-                                                (lambda (&rest args)
-                                                  (message args))
-                                                "user"
-                                                nil)))
-            clojure-mode-map)
   (make-local-variable 'buffer-meta)
   (accent/set-buffer-meta)
   (accent/evil-leader-keys))
