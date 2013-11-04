@@ -274,7 +274,12 @@ return.")
 (evil-leader/set-key
   "nt" 'project-explorer-open
   "w[" 'paredit-wrap-square
-  "w{" 'paredit-wrap-curly)
+  "w{" 'paredit-wrap-curly
+  "cp" 'comment-or-uncomment-region
+  "cl" (lambda ()
+         (interactive)
+         (comment-or-uncomment-region (line-beginning-position)
+                                      (line-end-position))))
 
 (defvar paren-face 'paren-face)
 
@@ -352,3 +357,4 @@ return.")
 (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
 
 (setq scroll-bar-mode nil)
+(scroll-bar-mode -1)
