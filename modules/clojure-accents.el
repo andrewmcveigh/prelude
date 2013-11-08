@@ -29,6 +29,28 @@ Use SESSION if it is non-nil, otherwise use the current session."
              "session" (or session (nrepl-current-session))
              "code" input))))
 
+(defun accent/cider-send-load-file (file-contents file-path file-name)
+  "Perform the nREPL \"load-file\" op.
+FILE-CONTENTS, FILE-PATH and FILE-NAME are details of the file to be
+loaded."
+  (let* ((accent (plist-get buffer-meta 'filetype))
+         (buffer (current-buffer)))
+    (nrepl-send-request
+     (append (if accent (list "accent" accent))
+             (list "op" "load-file"
+                   "session" (nrepl-current-session)
+                   "file" file-contents
+                   "file-path" file-path
+                   "file-name" file-name))
+     (cider-load-file-handler buffer))))
+
+(defun accent/cider-load-file-buffer (&optional p)
+  (interactive "P")
+  (accent/cider-send-load-file (buffer-substring-no-properties (point-min)
+                                                               (point-max))
+                               (plist-get buffer-meta 'filename)
+                               (plist-get buffer-meta 'name)))
+
 (defun accent/nrepl-send-string (input callback &optional ns session)
   "Send the request INPUT and register the CALLBACK as the response handler.
 See command `nrepl-eval-request' for details on how NS and SESSION are processed."
@@ -39,9 +61,17 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
 
 (eval-after-load "nrepl-client"
   '(defun nrepl-send-string (input callback &optional ns session)
-     "Send the request INPUT and register the CALLBACK as the response handler.
-See command `nrepl-eval-request' for details on how NS and SESSION are processed."
+     "Send the request INPUT and register the CALLBACK as the response
+handler.  See command `nrepl-eval-request' for details on how NS and
+SESSION are processed."
      (accent/nrepl-send-string input callback ns session)))
+
+(eval-after-load "cider-interaction"
+  '(defun cider-send-load-file (file-contents file-path file-name)
+     "Perform the nREPL \"load-file\" op.
+FILE-CONTENTS, FILE-PATH and FILE-NAME are details of the file to be
+loaded."
+     (accent/cider-send-load-file file-contents file-path file-name)))
 
 (defun accent/set-buffer-meta ()
   (let ((file (buffer-name)))
@@ -66,7 +96,7 @@ See command `nrepl-eval-request' for details on how NS and SESSION are processed
 
 (defun accent/evil-leader-keys ()
   (evil-leader/set-key "ns" 'cider-set-ns
-    "ef" 'cider-eval-buffer
+    "ef" 'accent/cider-load-file-buffer
     "ee" 'cider-eval-expression-at-point
     "gd" 'cider-jump))
 

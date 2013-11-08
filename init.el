@@ -242,7 +242,7 @@ return.")
                                                 (evil-scroll-line-to-center
                                                  (line-number-at-pos))))
 
-(define-key evil-normal-state-map (kbd "C-p") 'helm-prelude)
+(define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
 
 (define-key evil-normal-state-map (kbd "<") 'paredit-backward-barf-sexp)
 (define-key evil-normal-state-map (kbd ">") 'paredit-forward-barf-sexp)
@@ -275,6 +275,10 @@ return.")
   "nt" 'project-explorer-open
   "w[" 'paredit-wrap-square
   "w{" 'paredit-wrap-curly
+  "w\"" (lambda ()
+          (interactive)
+          (paredit-doublequote)
+          (paredit-forward-slurp-sexp))
   "cp" 'comment-or-uncomment-region
   "cl" (lambda ()
          (interactive)
