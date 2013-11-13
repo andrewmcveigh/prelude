@@ -12,6 +12,10 @@
   :keymap (progn
             (evil-make-overriding-map project-explorer-mode-map 'normal t)
             (evil-define-key 'normal project-explorer-mode-map
+              "r" (lambda ()
+                    (interactive)
+                    (let (project-root (funcall pe/project-root-function))
+                      (pe/set-directory pe/project-root)))
               "o" 'pe/return
               "v" (lambda ()
                     (interactive)

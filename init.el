@@ -362,3 +362,10 @@ return.")
 
 (setq scroll-bar-mode nil)
 (scroll-bar-mode -1)
+
+(load (expand-file-name "~/quicklisp/slime-helper.el"))
+;; Replace "sbcl" with the path to your implementation
+(setq inferior-lisp-program "ccl64")
+;(setq inferior-lisp-program "sbcl")
+
+;(setq slime-default-lisp 'ccl)
