@@ -184,11 +184,13 @@ by Prelude.")
   (evil-pparedit-mode))
 
 ;;; paredit init in lisp(s)
-(add-hook 'clojure-mode-hook 'evil-pparedit-mode)
+;(add-hook 'clojure-mode-hook 'evil-pparedit-mode)
 (add-hook 'emacs-lisp-mode-hook 'evil-pparedit-mode)
 
 ;;; Configure CIDER
 (add-hook 'cider-repl-mode-hook 'cider-mode-setup)
+(add-hook 'clojure-mode-hook 'cider-mode-setup)
+
 ;(add-hook 'cider-interaction-mode-hook 'cider-mode-setup)
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'cider-repl-mode))
@@ -342,6 +344,7 @@ return.")
 
 (require 'nerdtree-project-explorer)
 (require 'clojure-accents)
+(require 'longlines)
 
 (global-whitespace-mode +1)
 
@@ -363,9 +366,14 @@ return.")
 (setq scroll-bar-mode nil)
 (scroll-bar-mode -1)
 
-(load (expand-file-name "~/quicklisp/slime-helper.el"))
+;(load (expand-file-name "~/quicklisp/slime-helper.el"))
 ;; Replace "sbcl" with the path to your implementation
-(setq inferior-lisp-program "ccl64")
+;(setq inferior-lisp-program "ccl64")
+
 ;(setq inferior-lisp-program "sbcl")
 
 ;(setq slime-default-lisp 'ccl)
+
+;(setq whitespace-style '(spaces tabs newline space-mark tab-mark newline-mark))
+
+(setq whitespace-empty nil)
