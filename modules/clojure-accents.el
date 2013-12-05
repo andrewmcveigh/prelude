@@ -130,6 +130,14 @@ loaded."
   (accent/set-buffer-meta)
   (accent/evil-leader-keys))
 
+(defun evil-pparedit-mode ()
+  (paredit-mode)
+  (evil-paredit-mode))
+
+(defun cider-mode-setup ()
+  (ac-nrepl-setup)
+  (evil-pparedit-mode))
+
 (add-hook 'clojure-mode-hook 'clojure-accents-mode)
 (add-hook 'cider-repl-mode-hook 'clojure-accents-mode)
 

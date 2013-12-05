@@ -199,7 +199,9 @@ by Prelude.")
 (add-hook 'clojure-mode-hook 'paredit-mode)
 
 ;; eldoc in clojure
-; (add-hook 'cider-interaction-mode-hook 'cider-turn-on-eldoc-mode)
+(add-hook 'cider-interaction-mode-hook 'cider-turn-on-eldoc-mode)
+
+(global-auto-complete-mode)
 
 
 ;; Don't annoy me
@@ -250,9 +252,11 @@ return.")
 (define-key evil-normal-state-map (kbd ">") 'paredit-forward-barf-sexp)
 (define-key evil-normal-state-map (kbd "S") 'paredit-splice-sexp)
 (define-key evil-normal-state-map (kbd "W") 'paredit-wrap-round)
+
+;;; Backspace jump % normal
 (define-key evil-normal-state-map (kbd "\d") 'evil-jump-item)
-;(define-key evil-normal-state-map (kbd "cpp") 'cider-eval-expression-at-point)
-(define-key evil-normal-state-map (kbd "K") 'cider-doc)
+
+(define-key evil-normal-state-map (kbd "K") 'ac-nrepl-popup-doc)
 
 (define-key evil-normal-state-map (kbd "<left>") 'evil-window-left)
 (define-key evil-normal-state-map (kbd "<right>") 'evil-window-right)
@@ -260,6 +264,7 @@ return.")
 (define-key evil-normal-state-map (kbd "<down>") 'evil-window-down)
 
 ;;; motions
+;;; Backspace jump % motion
 (define-key evil-motion-state-map (kbd "\d") 'evil-jump-item)
 
 ;;; visual mode
@@ -377,3 +382,4 @@ return.")
 ;(setq whitespace-style '(spaces tabs newline space-mark tab-mark newline-mark))
 
 (setq whitespace-empty nil)
+
